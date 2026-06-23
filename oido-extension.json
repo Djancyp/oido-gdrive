@@ -1,0 +1,48 @@
+{
+  "name": "oido-gdrive",
+  "version": "1.0.0",
+  "description": "List, read, create, update, and delete Google Drive files via MCP, using your own Google OAuth connection.",
+  "runtime": "make build",
+  "mcpServers": {
+    "oido-gdrive": {
+      "command": "${extensionPath}/oido-gdrive-mcp",
+      "args": [],
+      "env": {
+        "GOOGLE_CLIENT_ID": "${GOOGLE_CLIENT_ID}",
+        "GOOGLE_CLIENT_SECRET": "${GOOGLE_CLIENT_SECRET}",
+        "GOOGLE_ACCESS_TOKEN": "${GOOGLE_ACCESS_TOKEN}"
+      }
+    }
+  },
+  "contextFileName": "OIDO.md",
+  "excludeTools": [],
+  "settings": [
+    {
+      "name": "GOOGLE_CLIENT_ID",
+      "description": "Google OAuth client ID (from your Google Cloud project)",
+      "defaultValue": "",
+      "type": "string",
+      "sensitive": true
+    },
+    {
+      "name": "GOOGLE_CLIENT_SECRET",
+      "description": "Google OAuth client secret",
+      "defaultValue": "",
+      "type": "string",
+      "sensitive": true
+    },
+    {
+      "name": "GOOGLE_OAUTH",
+      "description": "Connect your Google account to grant Drive access",
+      "type": "oauth2",
+      "provider": "google",
+      "scopes": [
+        "https://www.googleapis.com/auth/drive",
+        "https://www.googleapis.com/auth/userinfo.email"
+      ],
+      "clientIdKey": "GOOGLE_CLIENT_ID",
+      "clientSecretKey": "GOOGLE_CLIENT_SECRET",
+      "tokenKey": "GOOGLE_ACCESS_TOKEN"
+    }
+  ]
+}
