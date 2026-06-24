@@ -93,6 +93,19 @@ func CreateFile(ctx context.Context, name, content, folderID string) (*drive.Fil
 	return svc.Files.Create(f).Media(strings.NewReader(content)).Fields("id,name,mimeType").Do()
 }
 
+// CreateFolder creates a folder, optionally inside a parent folder.
+func CreateFolder(ctx context.Context, name, parentID string) (*drive.File, error) {
+	svc, err := driveService(ctx)
+	if err != nil {
+		return nil, err
+	}
+	f := &drive.File{Name: name, MimeType: "application/vnd.google-apps.folder"}
+	if parentID != "" {
+		f.Parents = []string{parentID}
+	}
+	return svc.Files.Create(f).Fields("id,name").Do()
+}
+
 // UpdateFile overwrites a file's content with new text.
 func UpdateFile(ctx context.Context, fileID, content string) (*drive.File, error) {
 	svc, err := driveService(ctx)

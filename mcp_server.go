@@ -34,6 +34,15 @@ type DeleteArgs struct {
 	FileID string `json:"file_id" jsonschema:"ID of the file to delete permanently"`
 }
 
+type CreateFolderArgs struct {
+	Name     string `json:"name" jsonschema:"Name of the new folder"`
+	ParentID string `json:"parent_id" jsonschema:"Optional parent folder ID"`
+}
+
+type DeleteFolderArgs struct {
+	FolderID string `json:"folder_id" jsonschema:"ID of the folder to delete permanently (with its contents)"`
+}
+
 func textResult(s string) *mcp.CallToolResult {
 	return &mcp.CallToolResult{Content: []mcp.Content{&mcp.TextContent{Text: s}}}
 }
@@ -88,6 +97,21 @@ func (h *handler) Delete(ctx context.Context, _ *mcp.CallToolRequest, a DeleteAr
 	return textResult("Deleted file " + a.FileID), nil, nil
 }
 
+func (h *handler) CreateFolder(ctx context.Context, _ *mcp.CallToolRequest, a CreateFolderArgs) (*mcp.CallToolResult, any, error) {
+	f, err := CreateFolder(ctx, a.Name, a.ParentID)
+	if err != nil {
+		return errResult(err), nil, nil
+	}
+	return textResult(fmt.Sprintf("Created folder %q (id: %s)", f.Name, f.Id)), nil, nil
+}
+
+func (h *handler) DeleteFolder(ctx context.Context, _ *mcp.CallToolRequest, a DeleteFolderArgs) (*mcp.CallToolResult, any, error) {
+	if err := DeleteFile(ctx, a.FolderID); err != nil {
+		return errResult(err), nil, nil
+	}
+	return textResult("Deleted folder " + a.FolderID), nil, nil
+}
+
 // RunMCPServer registers tools and serves over stdio.
 func RunMCPServer() {
 	h := &handler{}
@@ -113,6 +137,14 @@ func RunMCPServer() {
 		Name:        "drive_delete_file",
 		Description: "Permanently delete a Drive file by ID.",
 	}, h.Delete)
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "drive_create_folder",
+		Description: "Create a folder in Drive, optionally inside a parent folder.",
+	}, h.CreateFolder)
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "drive_delete_folder",
+		Description: "Permanently delete a Drive folder (and its contents) by ID.",
+	}, h.DeleteFolder)
 
 	log.Println("Oido Google Drive MCP Server starting on stdio...")
 	if err := server.Run(context.Background(), &mcp.StdioTransport{}); err != nil {
